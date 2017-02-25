@@ -7,7 +7,8 @@ app = Flask(__name__)
 def rec_img():
   file = request.files['img']
   file.save(os.path.join('./', filename))
-  return "img"
+  print("HIT")
+  return "recieved image"
 
 if __name__ == "__main__":
-  app.run
+  app.run(host='0.0.0.0', port=5000)
