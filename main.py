@@ -6,12 +6,12 @@ from PIL import Image
 from array import array
 import socket
 import sys
-#from thread import *
 import _thread
 from clarifai.rest import ClarifaiApp, Image as ClImage
 import pprint
 
 from dotenv import load_dotenv
+from watson_developer_cloud import VisualRecognitionV3
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -24,6 +24,10 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = ('0.0.0.0', 5001)
 sock.bind(server_address)
 sock.listen(1)
+
+vsl_rcgntn = VisualRecognitionV3(username=os.environ.get('USERNAME'),
+				password=os.environ.get('PASSWORD'),
+				version=os.environ.get('VERSION'))
 
 new_data = False
 
@@ -58,6 +62,11 @@ def isType(data, trash_type):
       return True
   return False
 
+def recg_watson():
+  with open(join(dirname(__file__), './test.bmp'), 'rb') as img:
+    return vsl_rcgntn.classify(img)
+  
+
 @app.route("/rec_img", methods=['POST'])
 def rec_img():
   file = request.files['uploaded']
@@ -79,6 +88,17 @@ def rec_img():
   global img_tags 
   img_tags = tags
   return "recieved image"
+
+@app.route("/train", methods=['POST'])
+def train_img():
+  file = request.files['uploaded']
+  bytes = bytearray(file.read())
+  image = Image.open(io.BytesIO(bytes))
+  image.save("./train.bmp")
+  climage = ClImage(file_obj=open('./train.bmp', 'rb'))
+  cl.inputs.create_image_from_url(climage, concept=[request.form['type']])
+  new_model = cl.models.get('{model_id}')
+  model.train()
 
 def socket_server():
   while True:
