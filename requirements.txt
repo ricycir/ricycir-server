@@ -1,3 +1,4 @@
 flask
 pillow
 clarifai==2.0.20
+python-dotenv
