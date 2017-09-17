@@ -10,4 +10,4 @@ def rec_img():
   return "img"
 
 if __name__ == "__main__":
-  app.run
+  app.run()
